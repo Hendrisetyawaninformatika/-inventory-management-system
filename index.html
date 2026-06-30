@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Inventory System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+            padding-top: 20px;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            margin: 4px 0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        .sidebar .brand {
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+        .sidebar .brand i {
+            font-size: 32px;
+        }
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .stats-card .icon {
+            font-size: 32px;
+            opacity: 0.7;
+        }
+        .stats-card .number {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        .badge-warning-custom {
+            background: #ffc107;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        .main-content {
+            padding: 20px;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar d-none d-md-block">
+                <div class="brand">
+                    <i class="bi bi-box-seam"></i>
+                    <h5 class="mt-2">Inventory System</h5>
+                </div>
+                <nav class="nav flex-column">
+                    <a href="dashboard.html" class="nav-link active">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a href="products.html" class="nav-link">
+                        <i class="bi bi-box"></i> Produk
+                    </a>
+                    <a href="stock-in.html" class="nav-link">
+                        <i class="bi bi-arrow-down-circle"></i> Barang Masuk
+                    </a>
+                    <a href="stock-out.html" class="nav-link">
+                        <i class="bi bi-arrow-up-circle"></i> Barang Keluar
+                    </a>
+                    <a href="suppliers.html" class="nav-link">
+                        <i class="bi bi-truck"></i> Supplier
+                    </a>
+                    <a href="reports.html" class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i> Laporan
+                    </a>
+                    <hr style="border-color: rgba(255,255,255,0.1);">
+                    <a href="#" class="nav-link" id="logoutBtn">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4><i class="bi bi-speedometer2"></i> Dashboard</h4>
+                    <div>
+                        <span class="badge bg-primary me-2">
+                            <i class="bi bi-bell"></i> 
+                            <span id="notificationBadge">0</span> Notifikasi
+                        </span>
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-person"></i> Admin
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="stats-card">
+                            <div class="d-flex justify-content-between">
+                                <div class="icon text-primary"><i class="bi bi-box"></i></div>
+                                <div class="text-muted">Total</div>
+                            </div>
+                            <div class="number" id="totalItems">0</div>
+                            <small class="text-muted">Total Barang</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stats-card">
+                            <div class="d-flex justify-content-between">
+                                <div class="icon text-success"><i class="bi bi-arrow-down-circle"></i></div>
+                                <div class="text-muted">Hari Ini</div>
+                            </div>
+                            <div class="number" id="totalIn">0</div>
+                            <small class="text-muted">Barang Masuk</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stats-card">
+                            <div class="d-flex justify-content-between">
+                                <div class="icon text-danger"><i class="bi bi-arrow-up-circle"></i></div>
+                                <div class="text-muted">Hari Ini</div>
+                            </div>
+                            <div class="number" id="totalOut">0</div>
+                            <small class="text-muted">Barang Keluar</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stats-card">
+                            <div class="d-flex justify-content-between">
+                                <div class="icon text-warning"><i class="bi bi-exclamation-triangle"></i></div>
+                                <div class="text-muted">Warning</div>
+                            </div>
+                            <div class="number" id="lowStock">0</div>
+                            <small class="text-muted">Stok Hampir Habis</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="row">
+                    <div class="col-md-8 mb-4">
+                        <div class="chart-container">
+                            <h6>Statistik Stok</h6>
+                            <canvas id="stockChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="chart-container">
+                            <h6>Kategori Produk</h6>
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6><i class="bi bi-bell"></i> Notifikasi Stok</h6>
+                    </div>
+                    <div class="card-body" id="notificationList">
+                        <div class="text-muted text-center">Tidak ada notifikasi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config/supabase.js"></script>
+    <script>
+        let stockChart = null;
+        let categoryChart = null;
+
+        async function loadDashboard() {
+            try {
+                // Check auth
+                await SupabaseAuth.checkAuth();
+
+                // Load stats
+                const stats = await DatabaseOperations.getDashboardStats();
+                document.getElementById('totalItems').textContent = stats.totalItems;
+                document.getElementById('totalIn').textContent = stats.totalIn;
+                document.getElementById('totalOut').textContent = stats.totalOut;
+                document.getElementById('lowStock').textContent = stats.lowStock;
+
+                // Load notifications
+                await loadNotifications();
+
+                // Load charts
+                await loadCharts();
+
+            } catch (error) {
+                console.error('Error:', error);
+                if (error.message.includes('JWT')) {
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+
+        async function loadNotifications() {
+            try {
+                const products = await DatabaseOperations.getProducts();
+                const lowStockItems = products.filter(p => p.stock <= p.min_stock);
+                
+                const notificationList = document.getElementById('notificationList');
+                const badge = document.getElementById('notificationBadge');
+                
+                badge.textContent = lowStockItems.length;
+
+                if (lowStockItems.length === 0) {
+                    notificationList.innerHTML = '<div class="text-muted text-center">Semua stok aman</div>';
+                } else {
+                    notificationList.innerHTML = lowStockItems.map(p => `
+                        <div class="alert alert-warning mb-2">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>${p.name}</strong> - Stok tersisa ${p.stock} unit 
+                            (Minimum: ${p.min_stock})
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        async function loadCharts() {
+            try {
+                const products = await DatabaseOperations.getProducts();
+                
+                // Stock Chart
+                const ctx = document.getElementById('stockChart').getContext('2d');
+                if (stockChart) stockChart.destroy();
+
+                const labels = products.slice(0, 10).map(p => p.name);
+                const data = products.slice(0, 10).map(p => p.stock);
+
+                stockChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Stok Barang',
+                            data: data,
+                            backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Category Chart
+                const categories = await DatabaseOperations.getCategories();
+                const categoryData = categories.map(c => {
+                    return products.filter(p => p.category_id === c.id).length;
+                });
+
+                const ctx2 = document.getElementById('categoryChart').getContext('2d');
+                if (categoryChart) categoryChart.destroy();
+
+                categoryChart = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categories.map(c => c.name),
+                        datasets: [{
+                            data: categoryData,
+                            backgroundColor: [
+                                '#667eea', '#764ba2', '#f093fb', '#4facfe',
+                                '#43e97b', '#fa709a', '#fee140', '#f6d365'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error loading charts:', error);
+            }
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await SupabaseAuth.logout();
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Load dashboard on page load
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barang Keluar - Inventory System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+            padding-top: 20px;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            margin: 4px 0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        .sidebar .brand {
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+        .main-content {
+            padding: 20px;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .stock-out-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar d-none d-md-block">
+                <div class="brand">
+                    <i class="bi bi-box-seam"></i>
+                    <h5 class="mt-2">Inventory System</h5>
+                </div>
+                <nav class="nav flex-column">
+                    <a href="dashboard.html" class="nav-link">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a href="products.html" class="nav-link">
+                        <i class="bi bi-box"></i> Produk
+                    </a>
+                    <a href="stock-in.html" class="nav-link">
+                        <i class="bi bi-arrow-down-circle"></i> Barang Masuk
+                    </a>
+                    <a href="stock-out.html" class="nav-link active">
+                        <i class="bi bi-arrow-up-circle"></i> Barang Keluar
+                    </a>
+                    <a href="suppliers.html" class="nav-link">
+                        <i class="bi bi-truck"></i> Supplier
+                    </a>
+                    <a href="reports.html" class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i> Laporan
+                    </a>
+                    <hr style="border-color: rgba(255,255,255,0.1);">
+                    <a href="#" class="nav-link" id="logoutBtn">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 main-content">
+                <h4 class="mb-4"><i class="bi bi-arrow-up-circle text-danger"></i> Barang Keluar</h4>
+
+                <!-- Form Barang Keluar -->
+                <div class="stock-out-card">
+                    <h6 class="mb-3">Input Barang Keluar</h6>
+                    <form id="stockOutForm">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Pilih Produk</label>
+                                <select class="form-select" id="stockOutProduct" required>
+                                    <option value="">Pilih Produk</option>
+                                </select>
+                                <small class="text-muted" id="stockInfo"></small>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label">Jumlah</label>
+                                <input type="number" class="form-control" id="stockOutQuantity" required min="1">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Tanggal Keluar</label>
+                                <input type="date" class="form-control" id="stockOutDate" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Keterangan</label>
+                                <input type="text" class="form-control" id="stockOutNote" placeholder="Contoh: Penjualan, rusak, dll">
+                            </div>
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-plus-circle"></i> Tambah Barang Keluar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tabel Riwayat -->
+                <div class="table-container">
+                    <h6 class="mb-3">Riwayat Barang Keluar</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Produk</th>
+                                    <th>Jumlah</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stockOutTableBody">
+                                <tr>
+                                    <td colspan="4" class="text-center">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config/supabase.js"></script>
+    <script>
+        let products = [];
+        let stockOuts = [];
+
+        async function loadData() {
+            try {
+                await SupabaseAuth.checkAuth();
+                
+                // Load products
+                products = await DatabaseOperations.getProducts();
+                populateProductSelects();
+
+                // Load stock out history
+                const { data, error } = await supabaseClient
+                    .from('stock_out')
+                    .select('*, products(name)')
+                    .order('out_date', { ascending: false });
+                
+                if (error) throw error;
+                stockOuts = data;
+                renderStockOuts();
+
+                // Set default date
+                document.getElementById('stockOutDate').value = new Date().toISOString().split('T')[0];
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function populateProductSelects() {
+            const select = document.getElementById('stockOutProduct');
+            select.innerHTML = '<option value="">Pilih Produk</option>' + 
+                products.map(p => `<option value="${p.id}" data-stock="${p.stock}">${p.name} (Stok: ${p.stock})</option>`).join('');
+
+            // Update stock info when product changes
+            select.addEventListener('change', function() {
+                const selected = this.options[this.selectedIndex];
+                const stock = selected.dataset.stock || 0;
+                document.getElementById('stockInfo').textContent = `Stok tersedia: ${stock} unit`;
+            });
+        }
+
+        function renderStockOuts() {
+            const tbody = document.getElementById('stockOutTableBody');
+            
+            if (stockOuts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">Belum ada data</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = stockOuts.map(s => `
+                <tr>
+                    <td>${new Date(s.out_date).toLocaleDateString('id-ID')}</td>
+                    <td>${s.products?.name || '-'}</td>
+                    <td><span class="badge bg-danger">${s.quantity}</span></td>
+                    <td>${s.note || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Submit stock out
+        document.getElementById('stockOutForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const product_id = document.getElementById('stockOutProduct').value;
+            const quantity = parseInt(document.getElementById('stockOutQuantity').value);
+            const out_date = document.getElementById('stockOutDate').value;
+            const note = document.getElementById('stockOutNote').value;
+
+            if (!product_id || !quantity || !out_date) {
+                showAlert('Harap isi semua field yang wajib', 'warning');
+                return;
+            }
+
+            try {
+                await DatabaseOperations.addStockOut({
+                    product_id,
+                    quantity,
+                    out_date,
+                    note
+                });
+
+                showAlert('Barang keluar berhasil ditambahkan', 'success');
+                document.getElementById('stockOutForm').reset();
+                document.getElementById('stockOutDate').value = new Date().toISOString().split('T')[0];
+                await loadData();
+
+            } catch (error) {
+                showAlert('Gagal menambahkan: ' + error.message, 'danger');
+            }
+        });
+
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await SupabaseAuth.logout();
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier - Inventory System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+            padding-top: 20px;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            margin: 4px 0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        .sidebar .brand {
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+        .main-content {
+            padding: 20px;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar d-none d-md-block">
+                <div class="brand">
+                    <i class="bi bi-box-seam"></i>
+                    <h5 class="mt-2">Inventory System</h5>
+                </div>
+                <nav class="nav flex-column">
+                    <a href="dashboard.html" class="nav-link">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a href="products.html" class="nav-link">
+                        <i class="bi bi-box"></i> Produk
+                    </a>
+                    <a href="stock-in.html" class="nav-link">
+                        <i class="bi bi-arrow-down-circle"></i> Barang Masuk
+                    </a>
+                    <a href="stock-out.html" class="nav-link">
+                        <i class="bi bi-arrow-up-circle"></i> Barang Keluar
+                    </a>
+                    <a href="suppliers.html" class="nav-link active">
+                        <i class="bi bi-truck"></i> Supplier
+                    </a>
+                    <a href="reports.html" class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i> Laporan
+                    </a>
+                    <hr style="border-color: rgba(255,255,255,0.1);">
+                    <a href="#" class="nav-link" id="logoutBtn">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4><i class="bi bi-truck"></i> Manajemen Supplier</h4>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#supplierModal">
+                        <i class="bi bi-plus-circle"></i> Tambah Supplier
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nama Supplier</th>
+                                    <th>Alamat</th>
+                                    <th>Telepon</th>
+                                    <th>Email</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplierTableBody">
+                                <tr>
+                                    <td colspan="5" class="text-center">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supplier Modal -->
+    <div class="modal fade" id="supplierModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Tambah Supplier</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="supplierForm">
+                        <input type="hidden" id="supplierId">
+                        <div class="mb-3">
+                            <label class="form-label">Nama Supplier</label>
+                            <input type="text" class="form-control" id="supplierName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alamat</label>
+                            <textarea class="form-control" id="supplierAddress" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Telepon</label>
+                            <input type="text" class="form-control" id="supplierPhone">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="supplierEmail">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveSupplierBtn">
+                        <i class="bi bi-save"></i> Simpan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config/supabase.js"></script>
+    <script>
+        let suppliers = [];
+
+        async function loadData() {
+            try {
+                await SupabaseAuth.checkAuth();
+                suppliers = await DatabaseOperations.getSuppliers();
+                renderSuppliers();
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function renderSuppliers() {
+            const tbody = document.getElementById('supplierTableBody');
+            
+            if (suppliers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Belum ada supplier</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = suppliers.map(s => `
+                <tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.address || '-'}</td>
+                    <td>${s.phone || '-'}</td>
+                    <td>${s.email || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning btn-action" onclick="editSupplier('${s.id}')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger btn-action" onclick="deleteSupplier('${s.id}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Open modal for add
+        document.querySelector('[data-bs-target="#supplierModal"]').addEventListener('click', () => {
+            document.getElementById('modalTitle').textContent = 'Tambah Supplier';
+            document.getElementById('supplierForm').reset();
+            document.getElementById('supplierId').value = '';
+        });
+
+        // Edit supplier
+        async function editSupplier(id) {
+            const supplier = suppliers.find(s => s.id === id);
+            if (!supplier) return;
+
+            document.getElementById('modalTitle').textContent = 'Edit Supplier';
+            document.getElementById('supplierId').value = id;
+            document.getElementById('supplierName').value = supplier.name;
+            document.getElementById('supplierAddress').value = supplier.address || '';
+            document.getElementById('supplierPhone').value = supplier.phone || '';
+            document.getElementById('supplierEmail').value = supplier.email || '';
+
+            const modal = new bootstrap.Modal(document.getElementById('supplierModal'));
+            modal.show();
+        }
+
+        // Delete supplier
+        async function deleteSupplier(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus supplier ini?')) return;
+
+            try {
+                await DatabaseOperations.deleteSupplier(id);
+                await loadData();
+                showAlert('Supplier berhasil dihapus', 'success');
+            } catch (error) {
+                showAlert('Gagal menghapus supplier: ' + error.message, 'danger');
+            }
+        }
+
+        // Save supplier
+        document.getElementById('saveSupplierBtn').addEventListener('click', async function() {
+            const id = document.getElementById('supplierId').value;
+            const name = document.getElementById('supplierName').value;
+            const address = document.getElementById('supplierAddress').value;
+            const phone = document.getElementById('supplierPhone').value;
+            const email = document.getElementById('supplierEmail').value;
+
+            if (!name) {
+                showAlert('Nama supplier wajib diisi', 'warning');
+                return;
+            }
+
+            try {
+                const supplierData = { name, address, phone, email };
+
+                if (id) {
+                    await DatabaseOperations.updateSupplier(id, supplierData);
+                    showAlert('Supplier berhasil diperbarui', 'success');
+                } else {
+                    await DatabaseOperations.addSupplier(supplierData);
+                    showAlert('Supplier berhasil ditambahkan', 'success');
+                }
+
+                bootstrap.Modal.getInstance(document.getElementById('supplierModal')).hide();
+                await loadData();
+
+            } catch (error) {
+                showAlert('Gagal menyimpan supplier: ' + error.message, 'danger');
+            }
+        });
+
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await SupabaseAuth.logout();
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
