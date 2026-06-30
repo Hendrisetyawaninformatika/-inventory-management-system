@@ -5,290 +5,632 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barang Masuk - Inventory System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="assets/css/style.css" rel="stylesheet">
     <style>
-        /* Copy sidebar styles from previous pages */
-        .sidebar {
-            min-height: 100vh;
-            background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
-            padding-top: 20px;
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
         }
-        .sidebar .nav-link {
-            color: rgba(255,255,255,0.8);
-            padding: 12px 20px;
-            margin: 4px 0;
-            border-radius: 8px;
-            transition: all 0.3s;
+        
+        .page-header h5 {
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
         }
-        .sidebar .nav-link:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
+        
+        .page-header small {
+            color: #94a3b8;
+            font-size: 14px;
         }
-        .sidebar .nav-link.active {
-            background: rgba(255,255,255,0.15);
-            color: white;
+        
+        .filter-section {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
         }
-        .sidebar .nav-link i {
-            margin-right: 10px;
-            width: 20px;
+        
+        .filter-section .input-group {
+            min-width: 200px;
         }
-        .sidebar .brand {
-            color: white;
-            text-align: center;
-            padding: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 20px;
-        }
-        .main-content {
-            padding: 20px;
-            background: #f5f7fa;
-            min-height: 100vh;
-        }
+        
         .table-container {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow-x: auto;
         }
-        .stock-in-card {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+        
+        .stock-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .stock-badge.in {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+        
+        .stock-badge.out {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+        
+        .empty-state h6 {
+            color: #0f172a;
+            font-weight: 600;
+        }
+        
+        .empty-state p {
+            color: #94a3b8;
+        }
+        
+        .modal-body .form-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #0f172a;
+        }
+        
+        .modal-body .form-control,
+        .modal-body .form-select {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-body .form-control:focus,
+        .modal-body .form-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+        
+        .modal-body textarea.form-control {
+            min-height: 80px;
+            resize: vertical;
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-2 sidebar d-none d-md-block">
-                <div class="brand">
-                    <i class="bi bi-box-seam"></i>
-                    <h5 class="mt-2">Inventory System</h5>
-                </div>
-                <nav class="nav flex-column">
-                    <a href="dashboard.html" class="nav-link">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                    <a href="products.html" class="nav-link">
-                        <i class="bi bi-box"></i> Produk
-                    </a>
-                    <a href="stock-in.html" class="nav-link active">
-                        <i class="bi bi-arrow-down-circle"></i> Barang Masuk
-                    </a>
-                    <a href="stock-out.html" class="nav-link">
-                        <i class="bi bi-arrow-up-circle"></i> Barang Keluar
-                    </a>
-                    <a href="suppliers.html" class="nav-link">
-                        <i class="bi bi-truck"></i> Supplier
-                    </a>
-                    <a href="reports.html" class="nav-link">
-                        <i class="bi bi-file-earmark-text"></i> Laporan
-                    </a>
-                    <hr style="border-color: rgba(255,255,255,0.1);">
-                    <a href="#" class="nav-link" id="logoutBtn">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </a>
-                </nav>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon"><i class="bi bi-box-seam"></i></div>
+        <div class="brand-text">Inventory<span>System</span></div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-label">Menu Utama</div>
+        <a href="dashboard.html" class="nav-item"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+        <a href="products.html" class="nav-item"><i class="bi bi-box"></i><span>Produk</span></a>
+        <a href="stock-in.html" class="nav-item active"><i class="bi bi-arrow-down-circle"></i><span>Barang Masuk</span></a>
+        <a href="stock-out.html" class="nav-item"><i class="bi bi-arrow-up-circle"></i><span>Barang Keluar</span></a>
+        <a href="suppliers.html" class="nav-item"><i class="bi bi-truck"></i><span>Supplier</span></a>
+        <div class="nav-divider"></div>
+        <div class="nav-label">Lainnya</div>
+        <a href="reports.html" class="nav-item"><i class="bi bi-file-earmark-text"></i><span>Laporan</span></a>
+        <a href="#" class="nav-item" id="logoutBtn"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+    </nav>
+</div>
+
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="header-left">
+            <button class="menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <div class="header-title">
+                <h5><i class="bi bi-arrow-down-circle" style="color: #10b981;"></i> Barang Masuk</h5>
+                <small>Kelola data penerimaan barang</small>
             </div>
-
-            <!-- Main Content -->
-            <div class="col-md-10 main-content">
-                <h4 class="mb-4"><i class="bi bi-arrow-down-circle text-success"></i> Barang Masuk</h4>
-
-                <!-- Form Barang Masuk -->
-                <div class="stock-in-card">
-                    <h6 class="mb-3">Input Barang Masuk</h6>
-                    <form id="stockInForm">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Pilih Produk</label>
-                                <select class="form-select" id="stockInProduct" required>
-                                    <option value="">Pilih Produk</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <label class="form-label">Jumlah</label>
-                                <input type="number" class="form-control" id="stockInQuantity" required min="1">
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Supplier</label>
-                                <select class="form-select" id="stockInSupplier">
-                                    <option value="">Pilih Supplier</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Tanggal Masuk</label>
-                                <input type="date" class="form-control" id="stockInDate" required>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">Catatan</label>
-                                <textarea class="form-control" id="stockInNote" rows="2"></textarea>
-                            </div>
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-plus-circle"></i> Tambah Barang Masuk
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Tabel Riwayat -->
-                <div class="table-container">
-                    <h6 class="mb-3">Riwayat Barang Masuk</h6>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Tanggal</th>
-                                    <th>Produk</th>
-                                    <th>Jumlah</th>
-                                    <th>Supplier</th>
-                                    <th>Catatan</th>
-                                </tr>
-                            </thead>
-                            <tbody id="stockInTableBody">
-                                <tr>
-                                    <td colspan="5" class="text-center">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+        </div>
+        <div class="header-right">
+            <div class="user-profile">
+                <div class="avatar" id="userAvatar">A</div>
+                <div class="user-info">
+                    <div class="name" id="userName">Admin</div>
+                    <div class="role">Administrator</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config/supabase.js"></script>
-    <script>
-        let products = [];
-        let suppliers = [];
-        let stockIns = [];
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#stockInModal" onclick="resetStockInForm()">
+                <i class="bi bi-plus-circle"></i> Tambah Barang Masuk
+            </button>
+            <button class="btn btn-outline-custom" onclick="refreshData()">
+                <i class="bi bi-arrow-repeat"></i> Refresh
+            </button>
+        </div>
+        <div class="filter-section">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control form-control-custom" id="searchInput" placeholder="Cari produk...">
+            </div>
+            <input type="date" class="form-control form-control-custom" id="dateFilter" style="max-width: 160px;">
+        </div>
+    </div>
 
-        async function loadData() {
-            try {
-                await SupabaseAuth.checkAuth();
-                
-                // Load products
-                products = await DatabaseOperations.getProducts();
-                populateProductSelects();
+    <!-- Stats Summary -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="stats-card" style="padding: 16px; border-left: 4px solid #6366f1;">
+                <div class="text-muted small">Total Penerimaan</div>
+                <div class="fw-bold fs-4" id="totalStockIn">0</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stats-card" style="padding: 16px; border-left: 4px solid #10b981;">
+                <div class="text-muted small">Total Unit Masuk</div>
+                <div class="fw-bold fs-4" id="totalQuantity">0</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stats-card" style="padding: 16px; border-left: 4px solid #f59e0b;">
+                <div class="text-muted small">Hari Ini</div>
+                <div class="fw-bold fs-4" id="todayCount">0</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stats-card" style="padding: 16px; border-left: 4px solid #8b5cf6;">
+                <div class="text-muted small">Produk Terakhir</div>
+                <div class="fw-bold fs-6" id="lastProduct">-</div>
+            </div>
+        </div>
+    </div>
 
-                // Load suppliers
-                suppliers = await DatabaseOperations.getSuppliers();
-                populateSupplierSelects();
+    <!-- Table -->
+    <div class="card-custom">
+        <div class="table-container">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Produk</th>
+                        <th>Jumlah</th>
+                        <th>Catatan</th>
+                        <th>Tanggal</th>
+                        <th style="width: 100px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="stockInTableBody">
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted mt-2">Memuat data...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-                // Load stock in history
-                const { data, error } = await supabaseClient
-                    .from('stock_in')
-                    .select('*, products(name), suppliers(name)')
-                    .order('entry_date', { ascending: false });
-                
-                if (error) throw error;
-                stockIns = data;
-                renderStockIns();
+<!-- MODAL TAMBAH / EDIT -->
+<div class="modal fade" id="stockInModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-arrow-down-circle text-success"></i>
+                    <span id="modalTitle">Tambah Barang Masuk</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <form id="stockInForm">
+                    <input type="hidden" id="editId">
+                    <div class="mb-3">
+                        <label class="form-label">Produk <span class="text-danger">*</span></label>
+                        <select class="form-select" id="productSelect" required>
+                            <option value="">Pilih Produk</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Jumlah <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="quantityInput" placeholder="Masukkan jumlah" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Catatan</label>
+                        <textarea class="form-control" id="noteInput" rows="2" placeholder="Catatan tambahan..."></textarea>
+                    </div>
+                    <div class="alert alert-info small" style="border-radius: 10px;">
+                        <i class="bi bi-info-circle"></i>
+                        Menambahkan barang masuk akan secara otomatis menambah stok produk.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary-custom" id="saveStockInBtn">
+                    <i class="bi bi-save"></i> Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-                // Set default date
-                document.getElementById('stockInDate').value = new Date().toISOString().split('T')[0];
+<!-- MODAL HAPUS -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="bi bi-exclamation-triangle"></i> Konfirmasi Hapus
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus data barang masuk ini?</p>
+                <p class="text-muted small">Data yang dihapus tidak dapat dikembalikan. Stok produk akan dikurangi otomatis.</p>
+                <div class="bg-light p-3 rounded-3 mt-2">
+                    <div><strong>Produk:</strong> <span id="deleteProductName">-</span></div>
+                    <div><strong>Jumlah:</strong> <span id="deleteQuantity">-</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-danger-custom" id="confirmDeleteBtn">
+                    <i class="bi bi-trash"></i> Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-            } catch (error) {
-                console.error('Error loading data:', error);
-            }
-        }
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config/supabase.js"></script>
+<script src="assets/js/main.js"></script>
+<script>
+let stockInData = [];
+let products = [];
+let deleteTargetId = null;
 
-        function populateProductSelects() {
-            const select = document.getElementById('stockInProduct');
-            select.innerHTML = '<option value="">Pilih Produk</option>' + 
-                products.map(p => `<option value="${p.id}">${p.name} (Stok: ${p.stock})</option>`).join('');
-        }
+// ============================================
+// LOAD DATA
+// ============================================
+async function loadData() {
+    try {
+        await SupabaseAuth.checkAuth();
+        
+        // Load products for dropdown
+        products = await DatabaseOperations.getProducts();
+        populateProductSelect();
+        
+        // Load stock in data
+        await loadStockIn();
+        
+        // Update stats
+        await updateStats();
+        
+        // Set user info
+        setUserInfo();
+        
+    } catch (error) {
+        console.error('Error loading data:', error);
+        showToast('Gagal memuat data: ' + error.message, 'error');
+    }
+}
 
-        function populateSupplierSelects() {
-            const select = document.getElementById('stockInSupplier');
-            select.innerHTML = '<option value="">Pilih Supplier</option>' + 
-                suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-        }
+// ============================================
+// LOAD STOCK IN
+// ============================================
+async function loadStockIn() {
+    try {
+        const result = await DatabaseOperations.getStockIn();
+        stockInData = result;
+        renderTable(stockInData);
+    } catch (error) {
+        console.error('Error loading stock in:', error);
+        showToast('Gagal memuat data barang masuk', 'error');
+    }
+}
 
-        function renderStockIns() {
-            const tbody = document.getElementById('stockInTableBody');
-            
-            if (stockIns.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Belum ada data</td></tr>';
-                return;
-            }
+// ============================================
+// RENDER TABLE
+// ============================================
+function renderTable(data) {
+    const tbody = document.getElementById('stockInTableBody');
+    
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h6>Belum ada data barang masuk</h6>
+                        <p>Mulai tambahkan penerimaan barang pertama Anda</p>
+                        <button class="btn btn-primary-custom btn-sm" data-bs-toggle="modal" data-bs-target="#stockInModal" onclick="resetStockInForm()">
+                            <i class="bi bi-plus-circle"></i> Tambah Barang Masuk
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = data.map((item, index) => `
+        <tr class="animate-fadeInUp">
+            <td>${index + 1}</td>
+            <td>
+                <div class="fw-semibold">${item.products?.name || 'Produk dihapus'}</div>
+                <small class="text-muted">ID: ${item.product_id?.substring(0, 8) || '-'}</small>
+            </td>
+            <td>
+                <span class="stock-badge in">
+                    <i class="bi bi-plus-circle"></i> +${item.quantity}
+                </span>
+            </td>
+            <td>
+                <div class="text-truncate" style="max-width: 200px;" title="${item.note || '-'}">
+                    ${item.note || '-'}
+                </div>
+            </td>
+            <td>
+                <div>${formatDate(item.created_at)}</div>
+                <small class="text-muted">${new Date(item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</small>
+            </td>
+            <td>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-danger" onclick="confirmDelete('${item.id}', '${item.products?.name || 'Unknown'}', ${item.quantity})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
 
-            tbody.innerHTML = stockIns.map(s => `
-                <tr>
-                    <td>${new Date(s.entry_date).toLocaleDateString('id-ID')}</td>
-                    <td>${s.products?.name || '-'}</td>
-                    <td><span class="badge bg-success">${s.quantity}</span></td>
-                    <td>${s.suppliers?.name || '-'}</td>
-                    <td>${s.note || '-'}</td>
-                </tr>
-            `).join('');
-        }
-
-        // Submit stock in
-        document.getElementById('stockInForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const product_id = document.getElementById('stockInProduct').value;
-            const quantity = parseInt(document.getElementById('stockInQuantity').value);
-            const supplier_id = document.getElementById('stockInSupplier').value;
-            const entry_date = document.getElementById('stockInDate').value;
-            const note = document.getElementById('stockInNote').value;
-
-            if (!product_id || !quantity || !entry_date) {
-                showAlert('Harap isi semua field yang wajib', 'warning');
-                return;
-            }
-
-            try {
-                await DatabaseOperations.addStockIn({
-                    product_id,
-                    quantity,
-                    supplier_id: supplier_id || null,
-                    entry_date,
-                    note
-                });
-
-                showAlert('Barang masuk berhasil ditambahkan', 'success');
-                document.getElementById('stockInForm').reset();
-                document.getElementById('stockInDate').value = new Date().toISOString().split('T')[0];
-                await loadData();
-
-            } catch (error) {
-                showAlert('Gagal menambahkan: ' + error.message, 'danger');
-            }
+// ============================================
+// POPULATE PRODUCT SELECT
+// ============================================
+function populateProductSelect() {
+    const select = document.getElementById('productSelect');
+    const currentValue = select.value;
+    
+    select.innerHTML = '<option value="">Pilih Produk</option>';
+    
+    if (products && products.length > 0) {
+        products.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id;
+            option.textContent = `${p.name} (Stok: ${p.stock || 0})`;
+            select.appendChild(option);
         });
+    }
+    
+    if (currentValue) select.value = currentValue;
+}
 
-        function showAlert(message, type = 'info') {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
-            alertDiv.style.zIndex = '9999';
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            document.body.appendChild(alertDiv);
-            setTimeout(() => alertDiv.remove(), 5000);
-        }
-
-        // Logout
-        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
-            e.preventDefault();
-            try {
-                await SupabaseAuth.logout();
-                window.location.href = 'login.html';
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
+// ============================================
+// UPDATE STATS
+// ============================================
+async function updateStats() {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        // Get today's data
+        const todayData = stockInData.filter(item => {
+            const date = new Date(item.created_at);
+            return date >= today && date < tomorrow;
         });
+        
+        const totalItems = stockInData.length;
+        const totalQuantity = stockInData.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        const todayCount = todayData.length;
+        const lastProduct = stockInData.length > 0 ? stockInData[0].products?.name || '-' : '-';
+        
+        document.getElementById('totalStockIn').textContent = totalItems;
+        document.getElementById('totalQuantity').textContent = totalQuantity;
+        document.getElementById('todayCount').textContent = todayCount;
+        document.getElementById('lastProduct').textContent = lastProduct;
+        
+    } catch (error) {
+        console.error('Error updating stats:', error);
+    }
+}
 
-        document.addEventListener('DOMContentLoaded', loadData);
-    </script>
+// ============================================
+// RESET FORM
+// ============================================
+function resetStockInForm() {
+    document.getElementById('modalTitle').textContent = 'Tambah Barang Masuk';
+    document.getElementById('stockInForm').reset();
+    document.getElementById('editId').value = '';
+    document.getElementById('productSelect').value = '';
+    document.getElementById('quantityInput').value = '';
+    document.getElementById('noteInput').value = '';
+    populateProductSelect();
+}
+
+// ============================================
+// SAVE STOCK IN
+// ============================================
+document.getElementById('saveStockInBtn').addEventListener('click', async function() {
+    const productId = document.getElementById('productSelect').value;
+    const quantity = parseInt(document.getElementById('quantityInput').value);
+    const note = document.getElementById('noteInput').value;
+    
+    if (!productId) {
+        showToast('Pilih produk terlebih dahulu', 'warning');
+        return;
+    }
+    
+    if (!quantity || quantity <= 0) {
+        showToast('Masukkan jumlah yang valid (minimal 1)', 'warning');
+        return;
+    }
+    
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyimpan...';
+    
+    try {
+        const result = await DatabaseOperations.addStockIn({
+            product_id: productId,
+            quantity: quantity,
+            note: note || ''
+        });
+        
+        if (result.success) {
+            showToast('✅ Barang masuk berhasil ditambahkan!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('stockInModal')).hide();
+            await loadData();
+        } else {
+            showToast('❌ Gagal: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('Error saving stock in:', error);
+        showToast('Gagal menyimpan: ' + error.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-save"></i> Simpan';
+    }
+});
+
+// ============================================
+// CONFIRM DELETE
+// ============================================
+function confirmDelete(id, productName, quantity) {
+    deleteTargetId = id;
+    document.getElementById('deleteProductName').textContent = productName;
+    document.getElementById('deleteQuantity').textContent = quantity + ' unit';
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// ============================================
+// DELETE STOCK IN
+// ============================================
+document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+    if (!deleteTargetId) return;
+    
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    
+    try {
+        const result = await DatabaseOperations.deleteStockIn(deleteTargetId);
+        
+        if (result.success) {
+            showToast('✅ Data barang masuk berhasil dihapus!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+            await loadData();
+        } else {
+            showToast('❌ Gagal: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting stock in:', error);
+        showToast('Gagal menghapus: ' + error.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-trash"></i> Hapus';
+        deleteTargetId = null;
+    }
+});
+
+// ============================================
+// SEARCH & FILTER
+// ============================================
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('dateFilter').addEventListener('change', applyFilters);
+
+function applyFilters() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const date = document.getElementById('dateFilter').value;
+    
+    let filtered = [...stockInData];
+    
+    if (search) {
+        filtered = filtered.filter(item => 
+            (item.products?.name || '').toLowerCase().includes(search) ||
+            (item.note || '').toLowerCase().includes(search)
+        );
+    }
+    
+    if (date) {
+        const filterDate = new Date(date);
+        filterDate.setHours(0, 0, 0, 0);
+        const nextDay = new Date(filterDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        
+        filtered = filtered.filter(item => {
+            const itemDate = new Date(item.created_at);
+            return itemDate >= filterDate && itemDate < nextDay;
+        });
+    }
+    
+    renderTable(filtered);
+}
+
+// ============================================
+// REFRESH DATA
+// ============================================
+function refreshData() {
+    showToast('🔄 Memperbarui data...', 'info');
+    loadData();
+}
+
+// ============================================
+// SET USER INFO
+// ============================================
+function setUserInfo() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.email) {
+        const nameEl = document.getElementById('userName');
+        if (nameEl) {
+            nameEl.textContent = user.email.split('@')[0].charAt(0).toUpperCase() + user.email.split('@')[0].slice(1);
+        }
+        const avatarEl = document.getElementById('userAvatar');
+        if (avatarEl) {
+            avatarEl.textContent = user.email.charAt(0).toUpperCase();
+        }
+    }
+}
+
+// ============================================
+// LOGOUT
+// ============================================
+document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+        await SupabaseAuth.logout();
+        showToast('Logout berhasil!', 'success');
+        setTimeout(() => window.location.href = 'login.html', 500);
+    } catch (error) {
+        showToast('Gagal logout', 'error');
+    }
+});
+
+// ============================================
+// INIT
+// ============================================
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
 </body>
 </html>
