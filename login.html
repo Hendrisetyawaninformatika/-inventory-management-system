@@ -7,6 +7,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        
         .login-page {
             min-height: 100vh;
             display: flex;
@@ -75,6 +78,11 @@
             color: white;
             margin: 0 auto 12px;
             box-shadow: 0 8px 30px rgba(245, 158, 11, 0.3);
+            animation: pulseIcon 2s ease-in-out infinite;
+        }
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
         .login-card .logo h3 {
             font-weight: 700;
@@ -124,6 +132,10 @@
         .login-card .form-group .form-control:focus {
             box-shadow: none;
         }
+        .login-card .form-group .form-control::placeholder {
+            color: #94a3b8;
+            font-size: 14px;
+        }
         .login-card .btn-login {
             width: 100%;
             padding: 14px;
@@ -146,19 +158,6 @@
         .login-card .btn-login:disabled {
             opacity: 0.7;
             cursor: not-allowed;
-        }
-        .login-card .demo-info {
-            text-align: center;
-            margin-top: 20px;
-            padding: 12px;
-            background: #f0fdf4;
-            border-radius: 12px;
-            font-size: 13px;
-            color: #64748b;
-            border: 1px solid #d1fae5;
-        }
-        .login-card .demo-info strong {
-            color: #059669;
         }
         .login-card .alert {
             border-radius: 12px;
@@ -196,17 +195,18 @@
             0%, 100% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-20px) rotate(10deg); }
         }
-        .animate-pulse {
-            animation: pulseIcon 2s ease-in-out infinite;
+        .spinner-login {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s ease-in-out infinite;
         }
-        @keyframes pulseIcon {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
-        @media (max-width: 576px) {
-            .login-card { padding: 32px 24px; margin: 16px; }
-        }
-
         .toast-item {
             position: fixed;
             top: 20px;
@@ -228,10 +228,17 @@
         .toast-item.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
         .toast-item.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .toast-item.info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        
         @keyframes slideInRight {
             from { opacity: 0; transform: translateX(100px); }
             to { opacity: 1; transform: translateX(0); }
+        }
+        @media (max-width: 576px) {
+            .login-card { padding: 32px 24px; margin: 16px; }
+            .toast-item { min-width: unset; max-width: calc(100vw - 40px); }
+        }
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            -webkit-text-fill-color: #0f172a !important;
         }
     </style>
 </head>
@@ -242,9 +249,7 @@
 
         <div class="login-card">
             <div class="logo">
-                <div class="brand-icon animate-pulse">
-                    <i class="bi bi-box-seam"></i>
-                </div>
+                <div class="brand-icon"><i class="bi bi-box-seam"></i></div>
                 <h3>Inventory <span>System</span></h3>
                 <p>Manajemen inventori modern &amp; profesional</p>
             </div>
@@ -254,12 +259,12 @@
                 <span id="alertText">Login gagal</span>
             </div>
 
-            <form id="loginForm" novalidate>
+            <form id="loginForm" novalidate autocomplete="off">
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                        <input type="email" class="form-control" id="email" placeholder="admin@example.com" value="admin@example.com" required>
+                        <input type="email" class="form-control" id="email" placeholder="Masukkan email Anda" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                     </div>
                 </div>
 
@@ -267,7 +272,7 @@
                     <label for="password">Password</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                        <input type="password" class="form-control" id="password" placeholder="Masukkan password" value="admin123" required>
+                        <input type="password" class="form-control" id="password" placeholder="Masukkan password Anda" required autocomplete="off">
                         <button class="btn btn-outline-secondary" type="button" id="togglePassword" style="border: none; background: transparent; padding: 0 16px;">
                             <i class="bi bi-eye"></i>
                         </button>
@@ -280,9 +285,10 @@
                 </button>
             </form>
 
-            <div class="demo-info">
-                <i class="bi bi-info-circle text-success"></i>
-                Demo: <strong>admin@example.com</strong> / <strong>admin123</strong>
+            <div class="text-center mt-3">
+                <small class="text-muted" style="font-size: 12px;">
+                    <i class="bi bi-shield-lock"></i> Koneksi aman terenkripsi
+                </small>
             </div>
         </div>
     </div>
@@ -292,14 +298,24 @@
     <script src="config/supabase.js"></script>
     <script>
         // ============================================
-        // MENGGUNAKAN supabaseClient DARI config/supabase.js
+        // CLEAR ALL SESSION DATA PADA PAGE LOAD
         // ============================================
-        
-        // supabaseClient sudah dideklarasikan di config/supabase.js
-        // Jadi kita langsung gunakan saja
+        (function clearSessionOnLoad() {
+            console.log('🧹 Clearing old session data...');
+            localStorage.removeItem('user');
+            localStorage.removeItem('session');
+            localStorage.removeItem('supabase.auth.token');
+            // Hapus semua yang berhubungan dengan supabase
+            Object.keys(localStorage).forEach(key => {
+                if (key.includes('supabase') || key.includes('auth')) {
+                    localStorage.removeItem(key);
+                }
+            });
+            console.log('✅ All session data cleared!');
+        })();
 
         // ============================================
-        // TOGGLE PASSWORD VISIBILITY
+        // TOGGLE PASSWORD
         // ============================================
         document.getElementById('togglePassword').addEventListener('click', function() {
             const passwordInput = document.getElementById('password');
@@ -320,13 +336,7 @@
             const existing = document.querySelector('.toast-item');
             if (existing) existing.remove();
             
-            const icons = { 
-                success: 'bi-check-circle-fill', 
-                error: 'bi-x-circle-fill', 
-                warning: 'bi-exclamation-triangle-fill', 
-                info: 'bi-info-circle-fill' 
-            };
-            
+            const icons = { success: 'bi-check-circle-fill', error: 'bi-x-circle-fill', warning: 'bi-exclamation-triangle-fill', info: 'bi-info-circle-fill' };
             const toast = document.createElement('div');
             toast.className = `toast-item ${type}`;
             toast.innerHTML = `
@@ -335,7 +345,6 @@
                 <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; color: white; font-size: 20px; cursor: pointer; opacity: 0.7;">&times;</button>
             `;
             document.body.appendChild(toast);
-            
             setTimeout(() => {
                 if (toast.parentElement) {
                     toast.style.opacity = '0';
@@ -346,69 +355,52 @@
         }
 
         // ============================================
-        // CREATE ADMIN USER IF NOT EXISTS
+        // CREATE ADMIN USER
         // ============================================
         async function ensureAdminUser() {
             try {
                 const adminEmail = 'admin@example.com';
                 const adminPassword = 'admin123';
                 
-                // Coba login dulu menggunakan supabaseClient dari config
                 const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
                     email: adminEmail,
                     password: adminPassword
                 });
                 
                 if (!loginError && loginData.user) {
-                    console.log('✅ Admin user already exists');
-                    return { success: true, user: loginData.user };
+                    console.log('✅ Admin user exists');
+                    return { success: true };
                 }
                 
-                // Jika login gagal, coba register
                 console.log('🔄 Creating admin user...');
                 const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
                     email: adminEmail,
                     password: adminPassword,
-                    options: {
-                        data: {
-                            full_name: 'Admin',
-                            role: 'admin'
-                        }
-                    }
+                    options: { data: { full_name: 'Admin', role: 'admin' } }
                 });
                 
                 if (signUpError) {
                     if (signUpError.message.includes('already registered')) {
-                        console.log('ℹ️ User already registered, trying login...');
-                        const { data: retryLogin, error: retryError } = await supabaseClient.auth.signInWithPassword({
-                            email: adminEmail,
-                            password: adminPassword
-                        });
-                        
-                        if (!retryError && retryLogin.user) {
-                            console.log('✅ Admin login successful');
-                            return { success: true, user: retryLogin.user };
-                        }
+                        console.log('ℹ️ User already registered');
+                        return { success: true };
                     }
                     throw signUpError;
                 }
                 
                 if (signUpData.user) {
-                    console.log('✅ Admin user created successfully!');
-                    showToast('✅ Akun admin berhasil dibuat! Silakan login.', 'success');
-                    return { success: true, user: signUpData.user };
+                    console.log('✅ Admin user created!');
+                    return { success: true };
                 }
                 
-                return { success: false, error: 'Gagal membuat akun admin' };
-                
+                return { success: false };
             } catch (error) {
-                console.error('❌ Error ensuring admin user:', error);
+                console.error('❌ Error ensuring admin:', error);
                 return { success: false, error: error.message };
             }
         }
 
         // ============================================
-        // LOGIN FORM SUBMIT
+        // LOGIN FORM
         // ============================================
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -422,14 +414,14 @@
             alertDiv.classList.remove('show');
             
             if (!email) {
-                alertText.textContent = 'Harap isi email';
+                alertText.textContent = 'Harap masukkan email';
                 alertDiv.classList.add('show');
                 document.getElementById('email').focus();
                 return;
             }
             
             if (!password) {
-                alertText.textContent = 'Harap isi password';
+                alertText.textContent = 'Harap masukkan password';
                 alertDiv.classList.add('show');
                 document.getElementById('password').focus();
                 return;
@@ -443,40 +435,51 @@
                 return;
             }
 
+            if (password.length < 6) {
+                alertText.textContent = 'Password minimal 6 karakter';
+                alertDiv.classList.add('show');
+                document.getElementById('password').focus();
+                return;
+            }
+
             loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Login...';
+            loginBtn.innerHTML = '<span class="spinner-login"></span> Login...';
 
             try {
-                // Coba login dengan supabaseClient dari config
+                // Hapus session lama sebelum login
+                localStorage.removeItem('user');
+                localStorage.removeItem('session');
+                localStorage.removeItem('supabase.auth.token');
+                
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
                 
                 if (error) {
-                    // Jika user tidak ditemukan, coba buat akun
                     if (error.message.includes('Invalid login credentials')) {
-                        const result = await ensureAdminUser();
-                        if (result.success) {
-                            // Coba login lagi
-                            const { data: retryData, error: retryError } = await supabaseClient.auth.signInWithPassword({
-                                email: email,
-                                password: password
-                            });
-                            
-                            if (retryError) {
-                                throw new Error('Login gagal setelah membuat akun. Silakan coba lagi.');
-                            }
-                            
-                            if (retryData.user) {
-                                localStorage.setItem('user', JSON.stringify(retryData.user));
-                                localStorage.setItem('session', JSON.stringify(retryData.session));
-                                showToast('✅ Login berhasil!', 'success');
-                                setTimeout(() => window.location.href = 'dashboard.html', 500);
-                                return;
+                        if (email === 'admin@example.com') {
+                            const result = await ensureAdminUser();
+                            if (result.success) {
+                                const { data: retryData, error: retryError } = await supabaseClient.auth.signInWithPassword({
+                                    email: email,
+                                    password: password
+                                });
+                                
+                                if (retryError) throw new Error('Login gagal. Silakan coba lagi.');
+                                
+                                if (retryData.user) {
+                                    localStorage.setItem('user', JSON.stringify(retryData.user));
+                                    localStorage.setItem('session', JSON.stringify(retryData.session));
+                                    showToast('✅ Login berhasil!', 'success');
+                                    setTimeout(() => window.location.href = 'dashboard.html', 500);
+                                    return;
+                                }
+                            } else {
+                                throw new Error('Gagal membuat akun. Silakan hubungi administrator.');
                             }
                         } else {
-                            throw new Error('Gagal membuat akun admin. Silakan daftar manual di Supabase.');
+                            throw new Error('Email atau password salah. Silakan coba lagi.');
                         }
                     } else {
                         throw error;
@@ -486,7 +489,7 @@
                 if (data.user) {
                     localStorage.setItem('user', JSON.stringify(data.user));
                     localStorage.setItem('session', JSON.stringify(data.session));
-                    showToast('✅ Login berhasil! Selamat datang kembali.', 'success');
+                    showToast('✅ Login berhasil! Selamat datang.', 'success');
                     setTimeout(() => window.location.href = 'dashboard.html', 500);
                 }
                 
@@ -501,33 +504,8 @@
         });
 
         // ============================================
-        // CHECK AUTH - Menggunakan supabaseClient
+        // TIDAK ADA AUTO REDIRECT - USER HARUS LOGIN MANUAL
         // ============================================
-        (async function checkAuth() {
-            try {
-                const userData = localStorage.getItem('user');
-                const sessionData = localStorage.getItem('session');
-                
-                if (userData && sessionData) {
-                    const { data: { user }, error } = await supabaseClient.auth.getUser();
-                    if (!error && user) {
-                        console.log('✅ Session valid, redirecting...');
-                        window.location.href = 'dashboard.html';
-                    } else {
-                        localStorage.removeItem('user');
-                        localStorage.removeItem('session');
-                    }
-                }
-                
-                // Ensure admin user exists
-                await ensureAdminUser();
-                
-            } catch (error) {
-                console.log('ℹ️ No valid session found');
-                localStorage.removeItem('user');
-                localStorage.removeItem('session');
-            }
-        })();
 
         // ============================================
         // ENTER KEY SUPPORT
@@ -537,7 +515,6 @@
                 document.getElementById('loginForm').dispatchEvent(new Event('submit'));
             }
         });
-
         document.getElementById('email').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 document.getElementById('password').focus();
@@ -545,19 +522,25 @@
         });
 
         // ============================================
-        // CLEAR ALERT ON INPUT
+        // CLEAR ALERT
         // ============================================
         document.getElementById('email').addEventListener('input', function() {
             document.getElementById('alertMessage').classList.remove('show');
         });
-        
         document.getElementById('password').addEventListener('input', function() {
             document.getElementById('alertMessage').classList.remove('show');
         });
 
-        console.log('✅ Login page loaded');
-        console.log('📝 Using supabaseClient from config/supabase.js');
-        
+        // ============================================
+        // FOCUS
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('email').focus();
+        });
+
+        console.log('✅ Login page loaded - Secure mode');
+        console.log('🔒 All session cleared, please login manually');
+        console.log('📝 Gunakan: admin@example.com / admin123');
     </script>
 </body>
 </html>

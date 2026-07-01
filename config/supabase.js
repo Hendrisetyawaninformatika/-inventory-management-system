@@ -8,8 +8,17 @@ const SUPABASE_URL = 'https://dqlimiyxeqjqfmvzbdwn.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_KiQi41m-R8Ihl6kTpv0Eag_rWIBTH0-'; // GANTI DENGAN KEY LENGKAP!
 // config/supabase.js
 
+
+
 // Inisialisasi Supabase
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: localStorage
+    }
+});
 
 console.log('✅ Supabase connected!');
 
@@ -18,28 +27,62 @@ console.log('✅ Supabase connected!');
 // ============================================
 class SupabaseAuth {
     static async checkAuth() {
+        // Cegah multiple call bersamaan
+        if (this._checking) {
+            console.log('⏳ Auth check already in progress...');
+            return true;
+        }
+        
+        this._checking = true;
+        
         try {
-            const { data: { session }, error } = await supabaseClient.auth.getSession();
-            if (error || !session) {
-                console.warn('⚠️ No active session');
+            // Ambil session dari localStorage dulu
+            const sessionData = localStorage.getItem('session');
+            
+            if (!sessionData) {
+                console.warn('⚠️ No session in localStorage');
                 if (!window.location.pathname.includes('login.html')) {
                     window.location.href = 'login.html';
                 }
                 return false;
             }
+            
+            // Verifikasi session ke Supabase
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            
+            if (error || !session) {
+                console.warn('⚠️ Invalid session, redirecting...');
+                localStorage.removeItem('user');
+                localStorage.removeItem('session');
+                localStorage.removeItem('supabase.auth.token');
+                
+                if (!window.location.pathname.includes('login.html')) {
+                    window.location.href = 'login.html';
+                }
+                return false;
+            }
+            
             console.log('✅ Session active:', session.user.email);
             return true;
+            
         } catch (error) {
             console.error('❌ Auth check error:', error);
             if (!window.location.pathname.includes('login.html')) {
                 window.location.href = 'login.html';
             }
             return false;
+        } finally {
+            this._checking = false;
         }
     }
 
     static async login(email, password) {
         try {
+            // Hapus session lama sebelum login
+            localStorage.removeItem('user');
+            localStorage.removeItem('session');
+            localStorage.removeItem('supabase.auth.token');
+            
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password
@@ -63,9 +106,19 @@ class SupabaseAuth {
 
     static async logout() {
         try {
-            await supabaseClient.auth.signOut();
+            // Hapus semua data localStorage
             localStorage.removeItem('user');
             localStorage.removeItem('session');
+            localStorage.removeItem('supabase.auth.token');
+            
+            // Hapus semua yang berhubungan dengan supabase
+            Object.keys(localStorage).forEach(key => {
+                if (key.includes('supabase') || key.includes('auth')) {
+                    localStorage.removeItem(key);
+                }
+            });
+            
+            await supabaseClient.auth.signOut();
             return { success: true };
         } catch (error) {
             console.error('❌ Logout error:', error);
@@ -84,7 +137,7 @@ class SupabaseAuth {
 }
 
 // ============================================
-// DATABASE OPERATIONS CLASS - LENGKAP
+// DATABASE OPERATIONS CLASS
 // ============================================
 class DatabaseOperations {
     // ===== PRODUCTS =====
@@ -194,7 +247,6 @@ class DatabaseOperations {
 
     static async addStockIn(stockData) {
         try {
-            // Mulai transaksi
             const { data: stockIn, error: stockError } = await supabaseClient
                 .from('stock_in')
                 .insert([{
@@ -207,7 +259,6 @@ class DatabaseOperations {
             
             if (stockError) throw stockError;
             
-            // Update stok produk
             const product = await this.getProductById(stockData.product_id);
             if (product) {
                 const newStock = (product.stock || 0) + stockData.quantity;
@@ -223,7 +274,6 @@ class DatabaseOperations {
 
     static async deleteStockIn(id) {
         try {
-            // Ambil data stock in sebelum dihapus
             const { data: stockData, error: fetchError } = await supabaseClient
                 .from('stock_in')
                 .select('*')
@@ -232,7 +282,6 @@ class DatabaseOperations {
             
             if (fetchError) throw fetchError;
             
-            // Hapus stock in
             const { error: deleteError } = await supabaseClient
                 .from('stock_in')
                 .delete()
@@ -240,7 +289,6 @@ class DatabaseOperations {
             
             if (deleteError) throw deleteError;
             
-            // Kurangi stok produk
             if (stockData) {
                 const product = await this.getProductById(stockData.product_id);
                 if (product) {
@@ -277,7 +325,6 @@ class DatabaseOperations {
 
     static async addStockOut(stockData) {
         try {
-            // Cek stok mencukupi
             const product = await this.getProductById(stockData.product_id);
             if (!product) {
                 return { success: false, error: 'Produk tidak ditemukan' };
@@ -287,7 +334,6 @@ class DatabaseOperations {
                 return { success: false, error: 'Stok tidak mencukupi' };
             }
             
-            // Tambah stock out
             const { data: stockOut, error: stockError } = await supabaseClient
                 .from('stock_out')
                 .insert([{
@@ -300,7 +346,6 @@ class DatabaseOperations {
             
             if (stockError) throw stockError;
             
-            // Update stok produk
             const newStock = (product.stock || 0) - stockData.quantity;
             await this.updateProduct(stockData.product_id, { stock: newStock });
             
@@ -313,7 +358,6 @@ class DatabaseOperations {
 
     static async deleteStockOut(id) {
         try {
-            // Ambil data stock out sebelum dihapus
             const { data: stockData, error: fetchError } = await supabaseClient
                 .from('stock_out')
                 .select('*')
@@ -322,7 +366,6 @@ class DatabaseOperations {
             
             if (fetchError) throw fetchError;
             
-            // Hapus stock out
             const { error: deleteError } = await supabaseClient
                 .from('stock_out')
                 .delete()
@@ -330,7 +373,6 @@ class DatabaseOperations {
             
             if (deleteError) throw deleteError;
             
-            // Tambah kembali stok produk
             if (stockData) {
                 const product = await this.getProductById(stockData.product_id);
                 if (product) {
@@ -478,7 +520,6 @@ class DatabaseOperations {
             const totalItems = products.reduce((sum, p) => sum + (p.stock || 0), 0);
             const lowStock = products.filter(p => (p.stock || 0) <= (p.min_stock || 5)).length;
             
-            // Ambil data stock in hari ini
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const tomorrow = new Date(today);
