@@ -2,167 +2,288 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan - Inventory System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Supplier - Inventory System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="assets/css/style.css" rel="stylesheet">
+    <link href="assets/css/mobile-responsive.css" rel="stylesheet">
 </head>
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
-    <div class="sidebar-brand"><div class="brand-icon"><i class="bi bi-box-seam"></i></div><div class="brand-text">Inventory<span>System</span></div></div>
+    <div class="sidebar-brand">
+        <div class="brand-icon"><i class="bi bi-box-seam"></i></div>
+        <div class="brand-text">Inventory<span>System</span></div>
+    </div>
     <nav class="sidebar-nav">
         <div class="nav-label">Menu Utama</div>
         <a href="dashboard.html" class="nav-item"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
         <a href="products.html" class="nav-item"><i class="bi bi-box"></i><span>Produk</span></a>
         <a href="stock-in.html" class="nav-item"><i class="bi bi-arrow-down-circle"></i><span>Barang Masuk</span></a>
         <a href="stock-out.html" class="nav-item"><i class="bi bi-arrow-up-circle"></i><span>Barang Keluar</span></a>
-        <a href="suppliers.html" class="nav-item"><i class="bi bi-truck"></i><span>Supplier</span></a>
+        <a href="suppliers.html" class="nav-item active"><i class="bi bi-truck"></i><span>Supplier</span></a>
         <div class="nav-divider"></div>
         <div class="nav-label">Lainnya</div>
-        <a href="reports.html" class="nav-item active"><i class="bi bi-file-earmark-text"></i><span>Laporan</span></a>
+        <a href="reports.html" class="nav-item"><i class="bi bi-file-earmark-text"></i><span>Laporan</span></a>
         <a href="#" class="nav-item" id="logoutBtn"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
     </nav>
 </div>
 
 <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
+<!-- MAIN CONTENT -->
 <div class="main-content">
     <div class="top-header">
         <div class="header-left">
             <button class="menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
-            <div class="header-title"><h5><i class="bi bi-file-earmark-text"></i> Laporan</h5><small>Lihat dan export laporan</small></div>
+            <div class="header-title">
+                <h5><i class="bi bi-truck" style="color: #f59e0b;"></i> Supplier</h5>
+                <small>Kelola data supplier</small>
+            </div>
         </div>
         <div class="header-right">
             <div class="user-profile">
-                <div class="avatar">A</div>
-                <div class="user-info"><div class="name">Admin</div><div class="role">Administrator</div></div>
+                <div class="avatar" id="userAvatar">A</div>
+                <div class="user-info">
+                    <div class="name" id="userName">Admin</div>
+                    <div class="role">Administrator</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="card-custom">
-        <div class="row g-3">
-            <div class="col-md-3"><label class="form-label-custom">Jenis Laporan</label><select class="form-select form-control-custom" id="reportType"><option value="stock_in">Barang Masuk</option><option value="stock_out">Barang Keluar</option><option value="stock">Stok Barang</option></select></div>
-            <div class="col-md-3"><label class="form-label-custom">Dari Tanggal</label><input type="date" class="form-control form-control-custom" id="reportStartDate"></div>
-            <div class="col-md-3"><label class="form-label-custom">Sampai Tanggal</label><input type="date" class="form-control form-control-custom" id="reportEndDate"></div>
-            <div class="col-md-3 d-flex align-items-end gap-2">
-                <button class="btn btn-primary-custom" id="filterReportBtn"><i class="bi bi-filter"></i> Filter</button>
-                <button class="btn btn-success-custom" id="exportPdfBtn"><i class="bi bi-file-pdf"></i></button>
-                <button class="btn btn-info" id="exportExcelBtn" style="color:white;"><i class="bi bi-file-excel"></i></button>
-                <button class="btn btn-secondary" id="printReportBtn"><i class="bi bi-printer"></i></button>
-            </div>
-        </div>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#supplierModal" onclick="resetSupplierForm()">
+            <i class="bi bi-plus-circle"></i> Tambah Supplier
+        </button>
+        <button class="btn btn-outline-custom" onclick="loadData()"><i class="bi bi-arrow-repeat"></i> Refresh</button>
     </div>
 
     <div class="card-custom">
         <div class="table-responsive">
-            <table class="table table-custom" id="reportTable">
-                <thead id="reportTableHead"><tr><th>Tanggal</th><th>Produk</th><th>Jumlah</th><th>Supplier/Keterangan</th></tr></thead>
-                <tbody id="reportTableBody"><tr><td colspan="4" class="text-center py-4"><p class="text-muted">Pilih filter untuk menampilkan laporan</p></td></tr></tbody>
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Kontak</th>
+                        <th>Telepon</th>
+                        <th>Alamat</th>
+                        <th style="width: 100px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="supplierTableBody">
+                    <tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary"></div><p class="text-muted mt-2">Memuat data...</p></td></tr>
+                </tbody>
             </table>
         </div>
     </div>
 </div>
 
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-items">
+        <a href="dashboard.html" class="nav-item"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+        <a href="products.html" class="nav-item"><i class="bi bi-box"></i><span>Produk</span></a>
+        <a href="stock-in.html" class="nav-item"><i class="bi bi-arrow-down-circle"></i><span>Masuk</span></a>
+        <a href="stock-out.html" class="nav-item"><i class="bi bi-arrow-up-circle"></i><span>Keluar</span></a>
+        <a href="suppliers.html" class="nav-item active"><i class="bi bi-truck"></i><span>Supplier</span></a>
+    </div>
+</div>
+
+<!-- MODAL SUPPLIER -->
+<div class="modal fade" id="supplierModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-truck text-warning"></i> <span id="modalTitle">Tambah Supplier</span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <form id="supplierForm">
+                    <input type="hidden" id="supplierId">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Supplier <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-custom" id="supplierName" placeholder="Nama supplier" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kontak</label>
+                        <input type="text" class="form-control form-control-custom" id="supplierContact" placeholder="Nama kontak">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Telepon</label>
+                        <input type="text" class="form-control form-control-custom" id="supplierPhone" placeholder="Nomor telepon">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alamat</label>
+                        <textarea class="form-control form-control-custom" id="supplierAddress" rows="2" placeholder="Alamat supplier"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary-custom" id="saveSupplierBtn"><i class="bi bi-save"></i> Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL HAPUS -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-danger"><i class="bi bi-exclamation-triangle"></i> Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus supplier <strong id="deleteSupplierName"></strong>?</p>
+                <p class="text-muted small">Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-danger-custom" id="confirmDeleteBtn"><i class="bi bi-trash"></i> Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config/supabase.js"></script>
 <script src="assets/js/main.js"></script>
 <script>
-let currentData = [], currentReportType = 'stock_in';
+let suppliers = [];
+let deleteTargetId = null;
 
 async function loadData() {
     try {
         await SupabaseAuth.checkAuth();
-        const endDate = new Date(), startDate = new Date();
-        startDate.setDate(startDate.getDate() - 30);
-        document.getElementById('reportStartDate').value = startDate.toISOString().split('T')[0];
-        document.getElementById('reportEndDate').value = endDate.toISOString().split('T')[0];
-        await loadReport();
-    } catch (error) { console.error('Error loading data:', error); }
+        suppliers = await DatabaseOperations.getSuppliers();
+        renderTable(suppliers);
+        setUserInfo();
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Gagal memuat data', 'error');
+    }
 }
 
-async function loadReport() {
-    const reportType = document.getElementById('reportType').value;
-    const startDate = document.getElementById('reportStartDate').value;
-    const endDate = document.getElementById('reportEndDate').value;
-    currentReportType = reportType;
+function renderTable(data) {
+    const tbody = document.getElementById('supplierTableBody');
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4"><i class="bi bi-inbox fs-1 text-muted d-block"></i><p class="text-muted mt-2">Belum ada supplier</p></td></tr>`;
+        return;
+    }
+    tbody.innerHTML = data.map((s, i) => `
+        <tr class="animate-fadeInUp">
+            <td><strong>${s.name}</strong></td>
+            <td>${s.contact || '-'}</td>
+            <td>${s.phone || '-'}</td>
+            <td class="text-truncate" style="max-width: 200px;">${s.address || '-'}</td>
+            <td>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-warning" onclick="editSupplier('${s.id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-danger" onclick="confirmDelete('${s.id}','${s.name}')"><i class="bi bi-trash"></i></button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function resetSupplierForm() {
+    document.getElementById('modalTitle').textContent = 'Tambah Supplier';
+    document.getElementById('supplierForm').reset();
+    document.getElementById('supplierId').value = '';
+}
+
+async function editSupplier(id) {
+    const supplier = suppliers.find(s => s.id === id);
+    if (!supplier) { showToast('Supplier tidak ditemukan', 'error'); return; }
+    document.getElementById('modalTitle').textContent = 'Edit Supplier';
+    document.getElementById('supplierId').value = id;
+    document.getElementById('supplierName').value = supplier.name;
+    document.getElementById('supplierContact').value = supplier.contact || '';
+    document.getElementById('supplierPhone').value = supplier.phone || '';
+    document.getElementById('supplierAddress').value = supplier.address || '';
+    new bootstrap.Modal(document.getElementById('supplierModal')).show();
+}
+
+function confirmDelete(id, name) {
+    deleteTargetId = id;
+    document.getElementById('deleteSupplierName').textContent = name;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+document.getElementById('saveSupplierBtn').addEventListener('click', async function() {
+    const id = document.getElementById('supplierId').value;
+    const name = document.getElementById('supplierName').value.trim();
+    const contact = document.getElementById('supplierContact').value.trim();
+    const phone = document.getElementById('supplierPhone').value.trim();
+    const address = document.getElementById('supplierAddress').value.trim();
+    
+    if (!name) { showToast('Harap isi Nama Supplier', 'warning'); return; }
+    
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    
     try {
-        let data = [];
-        if (reportType === 'stock_in') {
-            const { data: stockIn, error } = await supabaseClient.from('stock_in').select('*, products(name), suppliers(name)').gte('entry_date', startDate).lte('entry_date', endDate).order('entry_date', { ascending: false });
-            if (error) throw error;
-            data = stockIn.map(item => ({ date: item.entry_date, product: item.products?.name || '-', quantity: item.quantity, supplier: item.suppliers?.name || '-', note: item.note || '-' }));
-        } else if (reportType === 'stock_out') {
-            const { data: stockOut, error } = await supabaseClient.from('stock_out').select('*, products(name)').gte('out_date', startDate).lte('out_date', endDate).order('out_date', { ascending: false });
-            if (error) throw error;
-            data = stockOut.map(item => ({ date: item.out_date, product: item.products?.name || '-', quantity: item.quantity, supplier: item.note || '-', note: '-' }));
-        } else if (reportType === 'stock') {
-            const products = await DatabaseOperations.getProducts();
-            data = products.map(p => ({ date: new Date(p.created_at).toISOString().split('T')[0], product: p.name, quantity: p.stock, supplier: p.suppliers?.name || '-', note: `Min: ${p.min_stock}` }));
+        const data = { name, contact, phone, address };
+        if (id) {
+            await DatabaseOperations.updateSupplier(id, data);
+            showToast('Supplier berhasil diperbarui!', 'success');
+        } else {
+            await DatabaseOperations.addSupplier(data);
+            showToast('Supplier berhasil ditambahkan!', 'success');
         }
-        currentData = data;
-        renderReport(data, reportType);
-    } catch (error) { console.error('Error loading report:', error); showToast('Gagal memuat laporan: ' + error.message, 'danger'); }
-}
-
-function renderReport(data, reportType) {
-    const thead = document.getElementById('reportTableHead'), tbody = document.getElementById('reportTableBody');
-    let headers = ['Tanggal', 'Produk', 'Jumlah', 'Supplier/Keterangan'];
-    if (reportType === 'stock') headers = ['Tanggal Input', 'Produk', 'Stok', 'Supplier', 'Catatan'];
-    thead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
-    if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="${headers.length}" class="text-center py-4"><p class="text-muted">Tidak ada data</p></td></tr>`; return; }
-    tbody.innerHTML = data.map(item => {
-        const row = [formatDate(item.date), item.product, reportType === 'stock' ? item.quantity : `<span class="badge ${reportType === 'stock_in' ? 'bg-success' : 'bg-danger'}">${item.quantity}</span>`, reportType === 'stock' ? item.supplier : item.supplier];
-        if (reportType === 'stock') row.push(item.note);
-        return `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
-    }).join('');
-}
-
-document.getElementById('filterReportBtn').addEventListener('click', loadReport);
-document.getElementById('reportType').addEventListener('change', loadReport);
-document.getElementById('reportStartDate').addEventListener('change', loadReport);
-document.getElementById('reportEndDate').addEventListener('change', loadReport);
-
-document.getElementById('exportPdfBtn').addEventListener('click', function() {
-    if (currentData.length === 0) { showToast('Tidak ada data untuk diexport', 'warning'); return; }
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text(`Laporan ${getReportTitle()}`, 14, 15);
-    doc.text(`Periode: ${document.getElementById('reportStartDate').value} - ${document.getElementById('reportEndDate').value}`, 14, 25);
-    const headers = getReportHeaders();
-    const rows = currentData.map(item => [formatDate(item.date), item.product, item.quantity, item.supplier]);
-    doc.autoTable({ head: [headers], body: rows, startY: 35, theme: 'grid' });
-    doc.save(`laporan_${currentReportType}.pdf`);
+        bootstrap.Modal.getInstance(document.getElementById('supplierModal')).hide();
+        await loadData();
+    } catch (error) {
+        showToast('Gagal menyimpan: ' + error.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-save"></i> Simpan';
+    }
 });
 
-document.getElementById('exportExcelBtn').addEventListener('click', function() {
-    if (currentData.length === 0) { showToast('Tidak ada data untuk diexport', 'warning'); return; }
-    const data = currentData.map(item => ({ 'Tanggal': formatDate(item.date), 'Produk': item.product, 'Jumlah': item.quantity, 'Supplier/Keterangan': item.supplier }));
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Laporan');
-    XLSX.writeFile(wb, `laporan_${currentReportType}.xlsx`);
+document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+    if (!deleteTargetId) return;
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    try {
+        await DatabaseOperations.deleteSupplier(deleteTargetId);
+        showToast('Supplier berhasil dihapus!', 'success');
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+        await loadData();
+    } catch (error) {
+        showToast('Gagal menghapus: ' + error.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-trash"></i> Hapus';
+        deleteTargetId = null;
+    }
 });
 
-document.getElementById('printReportBtn').addEventListener('click', function() { window.print(); });
-
-function getReportTitle() {
-    const types = { 'stock_in': 'Barang Masuk', 'stock_out': 'Barang Keluar', 'stock': 'Stok Barang' };
-    return types[currentReportType] || 'Laporan';
+function setUserInfo() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.email) {
+        document.getElementById('userName').textContent = user.email.split('@')[0].charAt(0).toUpperCase() + user.email.split('@')[0].slice(1);
+        document.getElementById('userAvatar').textContent = user.email.charAt(0).toUpperCase();
+    }
 }
 
-function getReportHeaders() {
-    if (currentReportType === 'stock') return ['Tanggal Input', 'Produk', 'Stok', 'Supplier', 'Catatan'];
-    return ['Tanggal', 'Produk', 'Jumlah', 'Supplier/Keterangan'];
-}
-
-document.getElementById('logoutBtn').addEventListener('click', async (e) => { e.preventDefault(); try { await SupabaseAuth.logout(); showToast('Logout berhasil!', 'success'); setTimeout(() => window.location.href = 'login.html', 500); } catch (error) { showToast('Gagal logout', 'error'); } });
+document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+        await SupabaseAuth.logout();
+        showToast('Logout berhasil!', 'success');
+        setTimeout(() => window.location.href = 'login.html', 500);
+    } catch (error) {
+        showToast('Gagal logout', 'error');
+    }
+});
 
 document.addEventListener('DOMContentLoaded', loadData);
 </script>

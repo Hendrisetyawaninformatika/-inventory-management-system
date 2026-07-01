@@ -6,7 +6,6 @@
     <title>Login - Inventory Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
     <style>
         .login-page {
             min-height: 100vh;
@@ -56,6 +55,10 @@
             animation: fadeInUp 0.6s ease;
             border: 1px solid rgba(16, 185, 129, 0.1);
         }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .login-card .logo {
             text-align: center;
             margin-bottom: 32px;
@@ -79,7 +82,7 @@
         }
         .login-card .logo h3 span {
             background: linear-gradient(135deg, #f59e0b, #10b981);
-
+            -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         .login-card .logo p {
@@ -193,8 +196,42 @@
             0%, 100% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-20px) rotate(10deg); }
         }
+        .animate-pulse {
+            animation: pulseIcon 2s ease-in-out infinite;
+        }
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
         @media (max-width: 576px) {
             .login-card { padding: 32px 24px; margin: 16px; }
+        }
+
+        .toast-item {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 16px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            animation: slideInRight 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 450px;
+        }
+        .toast-item.success { background: linear-gradient(135deg, #10b981, #059669); }
+        .toast-item.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .toast-item.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .toast-item.info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
         }
     </style>
 </head>
@@ -252,8 +289,18 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config/supabase.js"></script>
+    <script src="config/supabase.js"></script>
     <script>
+        // ============================================
+        // MENGGUNAKAN supabaseClient DARI config/supabase.js
+        // ============================================
+        
+        // supabaseClient sudah dideklarasikan di config/supabase.js
+        // Jadi kita langsung gunakan saja
+
+        // ============================================
+        // TOGGLE PASSWORD VISIBILITY
+        // ============================================
         document.getElementById('togglePassword').addEventListener('click', function() {
             const passwordInput = document.getElementById('password');
             const icon = this.querySelector('i');
@@ -266,6 +313,103 @@
             }
         });
 
+        // ============================================
+        // SHOW TOAST
+        // ============================================
+        function showToast(message, type = 'info') {
+            const existing = document.querySelector('.toast-item');
+            if (existing) existing.remove();
+            
+            const icons = { 
+                success: 'bi-check-circle-fill', 
+                error: 'bi-x-circle-fill', 
+                warning: 'bi-exclamation-triangle-fill', 
+                info: 'bi-info-circle-fill' 
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = `toast-item ${type}`;
+            toast.innerHTML = `
+                <i class="bi ${icons[type] || icons.info}"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; color: white; font-size: 20px; cursor: pointer; opacity: 0.7;">&times;</button>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        // ============================================
+        // CREATE ADMIN USER IF NOT EXISTS
+        // ============================================
+        async function ensureAdminUser() {
+            try {
+                const adminEmail = 'admin@example.com';
+                const adminPassword = 'admin123';
+                
+                // Coba login dulu menggunakan supabaseClient dari config
+                const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
+                    email: adminEmail,
+                    password: adminPassword
+                });
+                
+                if (!loginError && loginData.user) {
+                    console.log('✅ Admin user already exists');
+                    return { success: true, user: loginData.user };
+                }
+                
+                // Jika login gagal, coba register
+                console.log('🔄 Creating admin user...');
+                const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
+                    email: adminEmail,
+                    password: adminPassword,
+                    options: {
+                        data: {
+                            full_name: 'Admin',
+                            role: 'admin'
+                        }
+                    }
+                });
+                
+                if (signUpError) {
+                    if (signUpError.message.includes('already registered')) {
+                        console.log('ℹ️ User already registered, trying login...');
+                        const { data: retryLogin, error: retryError } = await supabaseClient.auth.signInWithPassword({
+                            email: adminEmail,
+                            password: adminPassword
+                        });
+                        
+                        if (!retryError && retryLogin.user) {
+                            console.log('✅ Admin login successful');
+                            return { success: true, user: retryLogin.user };
+                        }
+                    }
+                    throw signUpError;
+                }
+                
+                if (signUpData.user) {
+                    console.log('✅ Admin user created successfully!');
+                    showToast('✅ Akun admin berhasil dibuat! Silakan login.', 'success');
+                    return { success: true, user: signUpData.user };
+                }
+                
+                return { success: false, error: 'Gagal membuat akun admin' };
+                
+            } catch (error) {
+                console.error('❌ Error ensuring admin user:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // ============================================
+        // LOGIN FORM SUBMIT
+        // ============================================
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -277,75 +421,143 @@
             
             alertDiv.classList.remove('show');
             
-            if (!email || !password) {
-                alertText.textContent = 'Harap isi email dan password';
+            if (!email) {
+                alertText.textContent = 'Harap isi email';
                 alertDiv.classList.add('show');
+                document.getElementById('email').focus();
+                return;
+            }
+            
+            if (!password) {
+                alertText.textContent = 'Harap isi password';
+                alertDiv.classList.add('show');
+                document.getElementById('password').focus();
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alertText.textContent = 'Format email tidak valid';
+                alertDiv.classList.add('show');
+                document.getElementById('email').focus();
                 return;
             }
 
             loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
+            loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Login...';
 
             try {
+                // Coba login dengan supabaseClient dari config
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
                 
-                if (error) throw error;
+                if (error) {
+                    // Jika user tidak ditemukan, coba buat akun
+                    if (error.message.includes('Invalid login credentials')) {
+                        const result = await ensureAdminUser();
+                        if (result.success) {
+                            // Coba login lagi
+                            const { data: retryData, error: retryError } = await supabaseClient.auth.signInWithPassword({
+                                email: email,
+                                password: password
+                            });
+                            
+                            if (retryError) {
+                                throw new Error('Login gagal setelah membuat akun. Silakan coba lagi.');
+                            }
+                            
+                            if (retryData.user) {
+                                localStorage.setItem('user', JSON.stringify(retryData.user));
+                                localStorage.setItem('session', JSON.stringify(retryData.session));
+                                showToast('✅ Login berhasil!', 'success');
+                                setTimeout(() => window.location.href = 'dashboard.html', 500);
+                                return;
+                            }
+                        } else {
+                            throw new Error('Gagal membuat akun admin. Silakan daftar manual di Supabase.');
+                        }
+                    } else {
+                        throw error;
+                    }
+                }
                 
                 if (data.user) {
                     localStorage.setItem('user', JSON.stringify(data.user));
                     localStorage.setItem('session', JSON.stringify(data.session));
-                    
-                    showToast('Login berhasil! Selamat datang kembali.', 'success');
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 500);
+                    showToast('✅ Login berhasil! Selamat datang kembali.', 'success');
+                    setTimeout(() => window.location.href = 'dashboard.html', 500);
                 }
+                
             } catch (error) {
+                console.error('Login error:', error);
                 alertText.textContent = error.message || 'Login gagal. Silakan coba lagi.';
                 alertDiv.classList.add('show');
-                showToast('Login gagal: ' + (error.message || 'Coba lagi'), 'error');
-            } finally {
+                showToast('❌ ' + (error.message || 'Login gagal'), 'error');
                 loginBtn.disabled = false;
                 loginBtn.innerHTML = `<i class="bi bi-box-arrow-in-right"></i><span>Login</span>`;
             }
         });
 
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer') || createToastContainer();
-            const icons = { success: 'bi-check-circle-fill', error: 'bi-x-circle-fill', warning: 'bi-exclamation-triangle-fill', info: 'bi-info-circle-fill' };
-            const toast = document.createElement('div');
-            toast.className = `toast-item ${type}`;
-            toast.style.cssText = `padding: 16px 20px; border-radius: 12px; color: white; font-weight: 500; box-shadow: 0 8px 30px rgba(0,0,0,0.15); animation: slideInLeft 0.4s ease; display: flex; align-items: center; gap: 12px; min-width: 300px; max-width: 450px; background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : type === 'warning' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #3b82f6, #2563eb)'};`;
-            toast.innerHTML = `<i class="bi ${icons[type] || icons.info}"></i><span>${message}</span><button class="toast-close" onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; color: white; font-size: 20px; cursor: pointer; opacity: 0.7;">&times;</button>`;
-            container.appendChild(toast);
-            setTimeout(() => { if (toast.parentElement) { toast.style.opacity = '0'; toast.style.transform = 'translateX(100px)'; setTimeout(() => toast.remove(), 300); } }, 5000);
-        }
-
-        function createToastContainer() {
-            const container = document.createElement('div');
-            container.id = 'toastContainer';
-            container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;';
-            document.body.appendChild(container);
-            return container;
-        }
-
+        // ============================================
+        // CHECK AUTH - Menggunakan supabaseClient
+        // ============================================
         (async function checkAuth() {
             try {
-                const user = localStorage.getItem('user');
-                if (user) {
-                    const { data: { user: currentUser }, error } = await supabaseClient.auth.getUser();
-                    if (!error && currentUser) {
+                const userData = localStorage.getItem('user');
+                const sessionData = localStorage.getItem('session');
+                
+                if (userData && sessionData) {
+                    const { data: { user }, error } = await supabaseClient.auth.getUser();
+                    if (!error && user) {
+                        console.log('✅ Session valid, redirecting...');
                         window.location.href = 'dashboard.html';
                     } else {
                         localStorage.removeItem('user');
                         localStorage.removeItem('session');
                     }
                 }
-            } catch (error) {}
+                
+                // Ensure admin user exists
+                await ensureAdminUser();
+                
+            } catch (error) {
+                console.log('ℹ️ No valid session found');
+                localStorage.removeItem('user');
+                localStorage.removeItem('session');
+            }
         })();
+
+        // ============================================
+        // ENTER KEY SUPPORT
+        // ============================================
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+
+        document.getElementById('email').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('password').focus();
+            }
+        });
+
+        // ============================================
+        // CLEAR ALERT ON INPUT
+        // ============================================
+        document.getElementById('email').addEventListener('input', function() {
+            document.getElementById('alertMessage').classList.remove('show');
+        });
+        
+        document.getElementById('password').addEventListener('input', function() {
+            document.getElementById('alertMessage').classList.remove('show');
+        });
+
+        console.log('✅ Login page loaded');
+        console.log('📝 Using supabaseClient from config/supabase.js');
+        
     </script>
 </body>
 </html>

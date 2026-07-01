@@ -1,0 +1,165 @@
+/* ============================================
+   MOBILE-RESPONSIVE CSS
+   ============================================ */
+
+/* ===== BOTTOM NAVIGATION ===== */
+.bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--border-color);
+    z-index: 1060;
+    padding: 4px 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+}
+
+.bottom-nav .nav-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.bottom-nav .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 8px;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 10px;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    min-width: 44px;
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.bottom-nav .nav-item i {
+    font-size: 20px;
+    margin-bottom: 1px;
+}
+
+.bottom-nav .nav-item.active {
+    color: #064e3b;
+}
+
+.bottom-nav .nav-item.active i {
+    color: #064e3b;
+}
+
+.bottom-nav .nav-item .badge-nav {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 18px;
+    height: 18px;
+    background: #ef4444;
+    color: white;
+    font-size: 9px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    padding: 0 4px;
+}
+
+/* Show bottom nav on mobile */
+@media (max-width: 767px) {
+    .bottom-nav {
+        display: block !important;
+    }
+}
+
+/* ============================================
+   TABEL CARD VIEW (Mobile)
+   ============================================ */
+@media (max-width: 576px) {
+    .table-custom thead {
+        display: none;
+    }
+    
+    .table-custom tbody tr {
+        display: block;
+        padding: 12px;
+        border-bottom: 2px solid #f1f5f9;
+        margin-bottom: 8px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .table-custom tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border: none;
+        font-size: 13px;
+    }
+    
+    .table-custom tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #64748b;
+        font-size: 12px;
+    }
+    
+    .table-custom tbody td:last-child {
+        justify-content: flex-end;
+    }
+}
+
+/* ============================================
+   MOBILE UTILITIES
+   ============================================ */
+@media (max-width: 767px) {
+    .btn-primary-custom,
+    .btn-danger-custom,
+    .btn-outline-custom {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .filter-section {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .filter-section .input-group,
+    .filter-section .form-control {
+        width: 100% !important;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .page-header > div {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .page-header > div .btn {
+        flex: 1;
+    }
+}
+
+/* ============================================
+   SAFE AREA
+   ============================================ */
+@supports (padding: max(0px)) {
+    .bottom-nav {
+        padding-bottom: max(4px, env(safe-area-inset-bottom));
+    }
+    .main-content {
+        padding-bottom: max(80px, env(safe-area-inset-bottom));
+    }
+}
